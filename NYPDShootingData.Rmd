@@ -1,0 +1,79 @@
+---
+title: "NYPD Shooting Data (Historic)"
+author: "Ryan W"
+date: "7/13/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Import Libraries
+``` {r import libraries, echo=FALSE}
+library(tidyverse)
+```
+## Importing Data
+* The url for the data is https://data.cityofnewyork.us/resource/833y-fsy8.csv. Here we will set the url to variable name "urls" and 
+
+``` {r importing, echo=FALSE}
+url <- "https://data.cityofnewyork.us/resource/833y-fsy8.csv"
+shootings <- read_csv(url)
+```
+
+## Tidying Data
+Here we:
+*remove unnecessary columns
+*Remove rows with "NA"
+*Here we rename columns
+     
+``` {r tidying, echo=FALSE}
+shootings <- subset(shootings, select = -c(precinct:statistical_murder_flag, x_coord_cd:geocoded_column, incident_key:occur_time))
+shootings <- na.omit(shootings)
+shootings <- shootings %>% 
+     rename(neighborhood = "boro",
+     perp_age = "perp_age_group",
+     vic_age = "vic_age_group")
+```
+
+## Summary of our Data
+``` {r shootings summary}
+summary(shootings)
+```
+
+## Analysis
+
+### Number of shootings by neighborhood
+``` {r shootings by neighborhood table}
+shootings_neighborhood <- shootings %>% 
+     group_by(neighborhood) %>%
+     summarize(number_of_shootings=n()) %>%
+     arrange(desc(number_of_shootings))
+shootings_neighborhood 
+```
+
+### Number of shootings by sex
+
+``` {r shootings by sex table}
+shootings_perp_sex <- shootings %>% 
+     group_by(perp_sex) %>%
+     summarize(number_of_shootings=n()) %>%
+     arrange(desc(number_of_shootings))
+shootings_perp_sex 
+```
+
+## Visualization
+
+### Number of shootings by neighborhood
+
+``` {r shootings_neighborhood plot}
+ggplot(shootings_neighborhood, aes(x=neighborhood, y=number_of_shootings)) + geom_col()
+```
+### Number of Shootings by Sex
+``` {r shootings_perp_sex plot}
+ggplot(shootings_perp_sex, aes(x=perp_sex, y=number_of_shootings)) + geom_col()
+```
+
+### Bias identification
+Since I analyzed shootings by the perpetrators sex, I should note that I generally consider males as having a higher capacity for violence than females. Since the result of my analysis is aligned with my bias, you should keep that in mind. 
+
+I don't know much about New York City, and I have no bias for the various neighborhoods there, so I don't think I had any bias affect my analysis.
